@@ -1,6 +1,6 @@
 import time
 import sys
-from pypresence import Presence
+from pypresence import Presence, exceptions
 # import random
 
 # to check exit or rerun mode
@@ -36,7 +36,10 @@ def get_mode():
 
         
 """
-
+Set the appID, names of image assets to be used, tooltip text.
+Supports more parameters like party size, button, details etc.
+but this is a simpler version. Maybe we can add them here in 
+future with better documentation.
 """
 def set_mode():
     mode = get_mode()
@@ -63,21 +66,28 @@ def set_mode():
 
 # connect discord running on system to the application ID(client ID)
 # --------------------------------------
-# RPC=Presence(client_id)
 
-def start_activity():
-    RPC = Presence(mode)
-    RPC.connect()
-    mode, largeImageKey, largeImageText, smallImageKey, smallIamgeText = set_mode()
+"""
 
+"""
+def start_activity(rpc, largeImageKey, largeImageText, smallImageKey, smallIamgeText):
+    # first fetch the details
+    try:
+        rpc.connect()
+    except exceptions.DiscordNotFound:
+        print("\nCould not find Discord installed and running on this machine.\nExiting...")
+        time.sleep(4)
+        sys.exit(0)
+    
     start_time = time.time()    # for logging
-    n = 0                       # for logging
+    iter = 0                       # for logging
 
     while True:
         # logs the cycle number in terminal
-        n = n + 1
-        m = n - 1
-        RPC.update(
+        iter += 1
+        m = iter - 1
+
+        rpc.update(
             large_image = largeImageKey,
             large_text = largeImageText,
             start = start_time,
@@ -85,17 +95,24 @@ def start_activity():
             small_text = smallIamgeText)
         
         # prints the cycle number & uptime in minutes
-        print(">>>  Running", n, "=> uptime:", "%.2f" % (((m)*25)/60),"minutes for", largeImageKey)
+        print(">>>  Running", iter, "=> uptime:", "%.2f" % (((m)*25)/60),"minutes for", largeImageKey)
         
         # updates after every 25 seconds
         time.sleep(25)
 
+
+def stop_activity(rpc):
+    rpc.close()
+
 def main():
+    mode, largeImageKey, largeImageText, smallImageKey, smallIamgeText = set_mode()
+    RPC = Presence(mode)
     try:
-        start_activity()
+        start_activity(RPC, largeImageKey, largeImageText, smallImageKey, smallIamgeText)
     
     except KeyboardInterrupt:
         print("Activity Interrupted...");time.sleep(1);print("Restarting service in 5s")
+        stop_activity(RPC)
         time.sleep(5)
         
         if flag:
