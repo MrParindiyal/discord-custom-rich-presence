@@ -71,6 +71,11 @@ def set_mode():
 
 """
 def start_activity(rpc, largeImageKey, largeImageText, smallImageKey, smallIamgeText):
+
+    # reset flag when starting activity
+    global flag
+    flag = 0
+
     # first fetch the details
     try:
         rpc.connect()
@@ -111,14 +116,16 @@ def main():
         start_activity(RPC, largeImageKey, largeImageText, smallImageKey, smallIamgeText)
     
     except KeyboardInterrupt:
-        print("Activity Interrupted...");time.sleep(1);print("Restarting service in 5s")
-        stop_activity(RPC)
-        time.sleep(5)
-        
-        if flag:
+        global flag
+        flag = +1
+
+        if flag == 2:
             sys.exit(0)
+
+        print("Activity Interrupted...");time.sleep(1);print("Restarting service in 3s")
+        stop_activity(RPC)
+        time.sleep(3)
         
-        flag += 1
         start_activity()
 
 if __name__ == "__main__":
