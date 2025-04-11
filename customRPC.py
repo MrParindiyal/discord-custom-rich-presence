@@ -21,19 +21,24 @@ we confirm exit with a 'y' or enter key. Other wise we call
 the function again to choose an app.
 """
 def get_mode():
-    choice = input("app1 / app2 ?\t\t")
-    if choice in ["app1", "app2"]:
-        return choice
-    
-    else:
-        quitting = input("Do you want to quit?")
-
-        if quitting.lower() in ["y", ""]:
-            sys.exit()
+    try:
+        choice = input("app1 / app2 ?\t\t")
+        if choice in ["app1", "app2"]:
+            return choice
         
         else:
-            get_mode()
+            quitting = input("Do you want to quit?")
 
+            if quitting.lower() in ["y", ""]:
+                sys.exit()
+            
+            else:
+                return get_mode()
+            
+    except KeyboardInterrupt:
+        print("Closing now...")
+        time.sleep(2)
+        sys.exit(0)
         
 """
 Set the appID, names of image assets to be used, tooltip text.
@@ -102,7 +107,7 @@ def start_activity(rpc, largeImageKey, largeImageText, smallImageKey, smallIamge
         # prints the cycle number & uptime in minutes
         print(">>>  Running", iter, "=> uptime:", "%.2f" % (((m)*25)/60),"minutes for", largeImageKey)
         
-        # updates after every 25 seconds
+        # updates after every 25 seconds, just to keep process from getting paused
         time.sleep(25)
 
 
@@ -110,23 +115,22 @@ def stop_activity(rpc):
     rpc.close()
 
 def main():
-    mode, largeImageKey, largeImageText, smallImageKey, smallIamgeText = set_mode()
-    RPC = Presence(mode)
-    try:
-        start_activity(RPC, largeImageKey, largeImageText, smallImageKey, smallIamgeText)
-    
-    except KeyboardInterrupt:
-        global flag
-        flag = +1
-
-        if flag == 2:
-            sys.exit(0)
-
-        print("Activity Interrupted...");time.sleep(1);print("Restarting service in 3s")
-        stop_activity(RPC)
-        time.sleep(3)
+    while True:
+        mode, largeImageKey, largeImageText, smallImageKey, smallIamgeText = set_mode()
+        RPC = Presence(mode)
+        try:
+            start_activity(RPC, largeImageKey, largeImageText, smallImageKey, smallIamgeText)
         
-        start_activity()
+        except KeyboardInterrupt:
+            global flag
+            flag += 1
+
+            if flag == 2:
+                sys.exit(0)
+
+            print("Activity Interrupted...");time.sleep(1);print("Restarting service in 3s")
+            stop_activity(RPC)
+            time.sleep(3)
 
 if __name__ == "__main__":
     main()
