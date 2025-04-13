@@ -128,8 +128,8 @@ def main():
             if flag == 2:
                 sys.exit(0)
 
-            print("Activity Interrupted...");time.sleep(1);print("Restarting service in 3s")
             stop_activity(RPC)
+            print("Activity Interrupted...");time.sleep(1);print("Restarting service in 3s")
             time.sleep(3)
 
 if __name__ == "__main__":
