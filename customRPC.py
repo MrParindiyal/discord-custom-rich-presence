@@ -102,10 +102,11 @@ def start_activity(rpc, largeImageKey, largeImageText, smallImageKey, smallIamge
         print(">>>  Running", iter, "=> uptime:", "%.2f" % (((m)*25)/60),"minutes for", largeImageKey)
         
         # updates after every 25 seconds, just to keep process from getting paused
-        time.sleep(25)
+        time.sleep(24)
 
 
 def stop_activity(rpc):
+    rpc.clear()
     rpc.close()
 
 def main():
@@ -114,6 +115,7 @@ def main():
         RPC = Presence(mode)
         try:
             start_activity(RPC, largeImageKey, largeImageText, smallImageKey, smallIamgeText)
+            time.sleep(1)
         
         except KeyboardInterrupt:
             stop_activity(RPC)
