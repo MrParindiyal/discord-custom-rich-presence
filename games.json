@@ -1,0 +1,24 @@
+[
+    {
+        "title" : "app1",
+        "attr"  : 
+        {
+            "mode" : "10ZXXXYYYXXXYYYZZ86",
+            "largeimg" : "BigImageName1",
+            "largetext" : "This is App 1",
+            "smallimg" : "SmallImageName1",
+            "smalltext" : "This is username"
+        }
+    },
+    {
+        "title" : "app2",
+        "attr"  : 
+        {
+            "mode" : "10ZXXXYYYXXXYYYZZ86",
+            "largeimg" : "BigImageName2",
+            "largetext" : "This is App 2",
+            "smallimg" : "__",
+            "smalltext" : "__"
+        }
+    }
+]
