@@ -1,6 +1,6 @@
 [
     {
-        "title" : "app1",
+        "title" : "choice1", 
         "attr"  : 
         {
             "mode" : "10ZXXXYYYXXXYYYZZ86",
@@ -11,7 +11,7 @@
         }
     },
     {
-        "title" : "app2",
+        "title" : "choice2",
         "attr"  : 
         {
             "mode" : "10ZXXXYYYXXXYYYZZ86",

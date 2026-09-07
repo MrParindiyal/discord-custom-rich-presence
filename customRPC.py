@@ -1,15 +1,12 @@
-import time
-import sys
+import json
 from pypresence import Presence, exceptions
-# import random
+import sys
+import time
 
 
 # application ID (from dev portal)
 # replace the string with your own app's ID
-
-app1ID = '10ZXXXYYYXXXYYYZZ86' # sampleID1
-app2ID = '10ZXXXYYYXXXYYYZZ86' # sampleID2
-# don't forget, IT'S A STRING, not an int !!
+# in games.json
 
 
 """
@@ -18,53 +15,70 @@ character is used, we assume user wants to exit. In that case,
 we confirm exit with a 'y' or enter key. Other wise we call
 the function again to choose an app.
 """
-def get_mode():
+
+
+def get_title() -> str | None:
     try:
-        choice = input("app1 / app2 ?\t\t")
-        if choice in ["app1", "app2"]:
+        game_names = []
+        with open("./games.json", "r") as file:
+            games = json.load(file)
+
+            for game in games:
+                game_names.append(game["title"])
+
+        game_names_str = "/".join(game_names) + "?"
+
+        choice = input(f"{game_names_str}\t")
+        if choice in game_names:
             return choice
-        
+
         else:
             quitting = input("Do you want to quit?")
 
             if quitting.lower() in ["y", ""]:
                 sys.exit()
-            
+
             else:
-                return get_mode()
-            
+                return get_title()
+
     except KeyboardInterrupt:
         print("Closing now...")
-        time.sleep(2)
+        try:
+            time.sleep(2)
+        except:
+            sys.exit(0)
         sys.exit(0)
-        
+
+    except Exception as e:
+        print(f"Unexpected error : {e}")
+        sys.exit(0)
+
+
 """
 Set the appID, names of image assets to be used, tooltip text.
 Supports more parameters like party size, button, details etc.
 but this is a simpler version. Maybe we can add them here in 
 future with better documentation.
 """
+
+
 def set_mode():
-    mode = get_mode()
+    title = get_title()
 
-    # TODO
-    # maybe this would be cleaner if implemented as a dict... Maybe   
-    if mode == "app1":
-        mode = app1ID                   # app ID
-        largeimg = "BigImageName1"      # name of asset from dev portal 
-        largetxt = "This is App 1"      # tooltip text for large image
-        smallimg = "SmallImageName1"    # name of asset from dev portal    
-        smalltext = "This is Username"  # tooltip text for small image
+    with open("./games.json", "r") as file:
+        games = json.load(file)
 
-    elif mode == "app2":
-        mode = app2ID                   # app ID
-        largeimg = "BigImageName2"      # name of asset from dev portal 
-        largetxt = "This is App 2"      # tooltip text for large image
-        smallimg = "__"                     # if asset is not found, then
-        smalltext = "__"                    # it won't simply render
+        for game in games:
+            if game["title"] == title:
+                appID = game["attr"]["appID"]
+                largeimg = game["attr"]["largeimg"]
+                largetext = game["attr"]["largetext"]
+                smallimg = game["attr"]["smallimg"]
+                smalltext = game["attr"]["smalltext"]
 
-    return mode, largeimg, largetxt, smallimg, smalltext
+                return appID, largeimg, largetext, smallimg, smalltext
 
+    return
 
 
 # connect discord running on system to the application ID(client ID)
@@ -73,18 +87,27 @@ def set_mode():
 """
 
 """
-def start_activity(rpc, largeImageKey, largeImageText, smallImageKey, smallIamgeText):
+
+
+def start_activity(
+    rpc: Presence,
+    largeImageKey: str,
+    largeImageText: str,
+    smallImageKey: str,
+    smallIamgeText: str,
+):
 
     # first fetch the details
     try:
         rpc.connect()
     except exceptions.DiscordNotFound:
-        print("\nCould not find Discord installed and running on this machine.\nExiting...")
-        time.sleep(4)
+        print("\nCannot find Discord running on this machine.\nExiting...")
+        time.sleep(3)
         sys.exit(0)
-    
-    start_time = time.time()    # for logging
-    iter = 0                       # for logging
+
+    # for logging
+    start_time = time.time()
+    iter = 0
 
     while True:
         # logs the cycle number in terminal
@@ -92,35 +115,52 @@ def start_activity(rpc, largeImageKey, largeImageText, smallImageKey, smallIamge
         m = iter - 1
 
         rpc.update(
-            large_image = largeImageKey,
-            large_text = largeImageText,
-            start = start_time,
-            small_image = smallImageKey,
-            small_text = smallIamgeText)
-        
+            large_image=largeImageKey,
+            large_text=largeImageText,
+            start=start_time,
+            small_image=smallImageKey,
+            small_text=smallIamgeText,
+        )
+
         # prints the cycle number & uptime in minutes
-        print(">>>  Running", iter, "=> uptime:", "%.2f" % (((m)*25)/60),"minutes for", largeImageKey)
-        
+        print(
+            ">>>  Running",
+            iter,
+            "=> uptime:",
+            "%.2f" % (((m) * 25) / 60),
+            "minutes for",
+            largeImageKey,
+        )
+
         # updates after every 25 seconds, just to keep process from getting paused
         time.sleep(24)
 
 
-def stop_activity(rpc):
+def stop_activity(rpc: Presence):
     rpc.clear()
     rpc.close()
 
+
 def main():
     while True:
-        mode, largeImageKey, largeImageText, smallImageKey, smallIamgeText = set_mode()
-        RPC = Presence(mode)
+        appID, largeImageKey, largeImageText, smallImageKey, smallIamgeText = set_mode()
+        RPC = Presence(appID)
         try:
-            start_activity(RPC, largeImageKey, largeImageText, smallImageKey, smallIamgeText)
+            start_activity(
+                RPC, largeImageKey, largeImageText, smallImageKey, smallIamgeText
+            )
             time.sleep(1)
-        
+
         except KeyboardInterrupt:
             stop_activity(RPC)
-            print("Activity Interrupted...");time.sleep(1);print("Restarting service in 3s")
-            time.sleep(3)
+            try:
+                print("Activity Interrupted...")
+                time.sleep(1)
+                print("Restarting service in 3s")
+                time.sleep(3)
+            except:
+                sys.exit(0)
+
 
 if __name__ == "__main__":
     main()
