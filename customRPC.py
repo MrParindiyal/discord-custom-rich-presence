@@ -3,7 +3,6 @@ from pypresence import Presence, exceptions
 import sys
 import time
 
-
 # application ID (from dev portal)
 # replace the string with your own app's ID
 # in games.json
