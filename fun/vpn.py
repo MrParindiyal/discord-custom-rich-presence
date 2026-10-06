@@ -1,3 +1,4 @@
+import os
 from pypresence import Presence, exceptions
 from random import choice, randint
 import sys
@@ -76,6 +77,14 @@ def generate_ip(real: bool) -> str:
     return f"{choice([10, 100, 200, 185, 138, 146, 156, 206, 3, 69, 169, 5, 51])}.{randint(0,255)}.{randint(0,255)}.{randint(0,255)}"
 
 
+
+def clear_screen():
+    if os.name == 'nt':
+        os.system('')
+        
+    print("\033[H\033[J", end="")
+
+
 def start_activity(rpc: Presence, largeImageKey: str):
 
     try:
@@ -110,7 +119,7 @@ def start_activity(rpc: Presence, largeImageKey: str):
             print(f"\b{spin[iter%4]}", end="", flush=True)
             iter += 1
             time.sleep(0.7)
-
+        clear_screen()
 
 def stop_activity(rpc: Presence):
     rpc.clear()
